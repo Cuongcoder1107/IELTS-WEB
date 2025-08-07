@@ -88,6 +88,16 @@
         <div id="readingPage" class="page">
             <div class="page-header">
                 <h1 class="page-title">Reading Practice</h1>
+
+                <!-- *** NEW: Thêm khu vực đồng hồ *** -->
+            <div id="timerContainer" class="timer-container">
+                <!-- *** THÊM Ô INPUT ĐỂ CÀI ĐẶT THỜI GIAN *** -->
+                <input type="number" id="timeSetter" class="time-setter" value="60" min="1" title="Đặt số phút làm bài">
+                <span>phút</span>
+                <span id="timerDisplay" class="timer-display">60:00</span>
+                <button id="timerToggleBtn" class="timer-toggle-btn start">Bắt đầu</button>
+            </div>
+
                 <div class="header-buttons">
                     <button id="newFileBtn" class="new-file-btn" onclick="loadNewFile()">
                         📁 Tải file mới
@@ -115,10 +125,24 @@
                         
                         <div class="resizer" id="resizer"></div>
                         
+                        <!-- BẮT ĐẦU PHẦN THAY THẾ -->
                         <div id="rightPanel" class="pdf-panel" style="flex: 1;">
                             <div class="pdf-panel-header">Làm bài</div>
-                            <div id="rightViewer" class="pdf-viewer"></div>
+                            <div id="rightViewer" class="pdf-viewer">
+                                <!-- 
+                                    Phần này đã được xóa bỏ ô nhập key.
+                                    Nó sẽ hiển thị một thông báo chờ ban đầu.
+                                -->
+                                <div class="initial-prompt">
+                                    <h3>Chờ tạo câu hỏi...</h3>
+                                    <p>Sau khi tải file PDF lên, câu hỏi sẽ được tạo ở đây.</p>
+                                </div>
+                            </div>
+                            <div id="quizActions" class="quiz-actions-container">
+                                <!-- Nút kiểm tra đáp án sẽ được chèn vào đây bởi JavaScript -->
+                            </div>
                         </div>
+                        <!-- KẾT THÚC PHẦN THAY THẾ -->
                     </div>
                 </div>
             </div>

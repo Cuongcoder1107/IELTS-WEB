@@ -298,49 +298,11 @@ body {
     color: #dc3545;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .main-title {
-        font-size: 2rem;
-    }
-    
-    .skills-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .pdf-panels {
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .resizer {
-        width: 100%;
-        height: 3px;
-        cursor: row-resize;
-    }
-    
-    .header-buttons {
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .new-file-btn, .back-btn {
-        padding: 8px 16px;
-        font-size: 0.9rem;
-    }
-    
-    .reading-content {
-        height: calc(100vh - 80px);
-        padding: 10px;
-        border-radius: 0;
-    }
-}
-
 /* Listening Page Styles */
 .listening-content {
     background: rgba(255,255,255,0.95);
     border-radius: 0;
-    padding: 0; /* bỏ padding để tràn sát */
+    padding: 0;
     height: calc(100vh - 80px);
     display: flex;
     flex-direction: column;
@@ -351,7 +313,7 @@ body {
     display: flex;
     height: 100%;
     gap: 5px;
-    padding: 0 10px; /* thêm tí padding nhỏ để không dính sát mép */
+    padding: 0 10px;
 }
 
 .listening-panel {
@@ -396,7 +358,6 @@ body {
     margin-top: 5px;
 }
 
-/* Resizer for Listening Page */
 #listeningResizer {
     width: 3px;
     background: #ccc;
@@ -408,8 +369,251 @@ body {
     background: #667eea;
 }
 
-/* Responsive for Listening */
+
+/* --- Styles cho phần câu hỏi AI --- */
+
+.initial-prompt {
+    padding: 30px;
+    text-align: center;
+    color: #666;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.initial-prompt h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.quiz-actions-container {
+    padding: 15px;
+    text-align: center;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.check-answers-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+.check-answers-btn:hover {
+    background: #059669;
+}
+.check-answers-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Định dạng câu hỏi chung */
+.question {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.question-text {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+.question.correct {
+    border-left: 5px solid #10b981;
+}
+.question.incorrect {
+    border-left: 5px solid #ef4444;
+}
+
+/* Dạng Multiple Choice */
+.options label {
+    display: block;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 5px;
+    background: #f7f7f7;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.options label:hover {
+    background: #e9e9e9;
+}
+.options input[type="radio"] {
+    margin-right: 10px;
+}
+.question.incorrect .options label.correct-answer {
+    background-color: #d1fae5;
+    border: 1px solid #10b981;
+}
+
+/* --- STYLES FOR JSON-RENDERED QUIZ --- */
+
+.passage-container {
+    margin-bottom: 30px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 20px;
+}
+.passage-container:last-child {
+    border-bottom: none;
+}
+.passage-container h2 {
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.question-group {
+    margin-bottom: 25px;
+    background-color: #fdfdfd;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.instruction {
+    font-style: italic;
+    color: #555;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.matching-options-box {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+}
+.matching-options-box h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+.matching-options-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.matching-options-box li {
+    padding: 2px 0;
+}
+
+/* Dạng điền từ, matching, short-answer */
+.gap-input, .matching-input, .short-answer-input {
+    border: none;
+    border-bottom: 1px solid #999;
+    background: transparent;
+    font-size: 1rem;
+    padding: 2px 5px;
+    margin: 0 5px;
+    text-align: center;
+}
+.gap-input:focus, .matching-input:focus, .short-answer-input:focus {
+    outline: none;
+    border-bottom: 2px solid #667eea;
+}
+.gap-question {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.gap-question .question-text {
+    flex-grow: 1;
+}
+.gap-question .gap-input, .gap-question .short-answer-input {
+    flex-shrink: 0;
+    width: 150px;
+}
+
+/* Dạng True/False/NG */
+.tf-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.tf-options {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.tf-options label {
+    background-color: #e9ecef;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.tf-options label:hover {
+    background-color: #ced4da;
+}
+.tf-options input[type="radio"] {
+    display: none;
+}
+.tf-options input:checked + label {
+    background-color: #667eea;
+    color: white;
+}
+.tf-options label.correct-answer {
+    background-color: #d1fae5;
+    color: #064e3b;
+    border: 1px solid #10b981;
+}
+
+/* Hiển thị đáp án đúng */
+.correct-answer-text {
+    font-weight: bold;
+    color: #10b981;
+    margin-left: 10px;
+}
+
+/* Câu hỏi không có đáp án */
+.question.no-answer {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+}
+
+
+/* Responsive */
 @media (max-width: 768px) {
+    .main-title {
+        font-size: 2rem;
+    }
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+    .pdf-panels {
+        flex-direction: column;
+        gap: 5px;
+    }
+    .resizer {
+        width: 100%;
+        height: 3px;
+        cursor: row-resize;
+    }
+    .header-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+    .new-file-btn, .back-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    .reading-content {
+        height: auto; /* Cho phép nội dung dài ra trên mobile */
+        padding: 10px;
+        border-radius: 0;
+    }
     .listening-panels {
         flex-direction: column;
     }
@@ -418,4 +622,118 @@ body {
         height: 3px;
         cursor: row-resize;
     }
+}
+
+.summary-block {
+    line-height: 2.2; /* Tăng khoảng cách dòng để dễ đọc */
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* Các ô input điền từ trong summary-block */
+.summary-block .gap-input {
+    width: 150px; /* Độ rộng của ô điền từ */
+}
+
+/* Định dạng cho span.question bọc quanh input */
+.summary-block span.question {
+    display: inline-block; /* Giữ cho input nằm trên cùng một dòng với văn bản */
+    vertical-align: baseline;
+}
+
+/* Thêm vào cuối file style.css */
+
+/* --- STYLES FOR TIMER --- */
+.timer-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background-color: #f1f5f9;
+    padding: 8px 15px;
+    border-radius: 25px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.timer-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #334155;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.timer-toggle-btn {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+.timer-toggle-btn.start {
+    background-color: #22c55e; /* Màu xanh lá cây */
+    color: white;
+}
+.timer-toggle-btn.start:hover {
+    background-color: #16a34a;
+}
+.timer-toggle-btn.pause {
+    background-color: #f59e0b; /* Màu vàng */
+    color: white;
+}
+.timer-toggle-btn.pause:hover {
+    background-color: #d97706;
+}
+
+/* Style khi hết giờ */
+.timer-display.times-up {
+    color: #ef4444; /* Màu đỏ */
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Thêm vào phần Responsive */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+.time-setter {
+    width: 55px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.time-setter:focus {
+    outline: 2px solid #667eea;
+}
+
+.timer-container span {
+    color: #475569;
+}
+
+.matching-sentence-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.sentence-ending-select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    flex-shrink: 0; /* Ngăn không cho select bị co lại */
 }
