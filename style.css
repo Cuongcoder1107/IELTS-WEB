@@ -454,6 +454,48 @@ body {
     border: 1px solid #10b981;
 }
 
+.mc-options .mc-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 5px;
+    background: #f7f7f7;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.mc-options .mc-option:hover {
+    background: #e9e9e9;
+}
+
+.mc-options input[type="radio"] {
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.mc-options label {
+    display: block; /* Ghi đè style chung */
+    width: 100%;
+    margin-bottom: 0; /* Ghi đè style chung */
+    padding: 0; /* Ghi đè style chung */
+    background: none; /* Ghi đè style chung */
+    cursor: pointer;
+}
+
+/* Style cho đáp án ĐÚNG khi người dùng làm SAI */
+.question.incorrect .mc-option .correct-answer {
+    /* Mặc dù JS thêm class vào label, ta sẽ định dạng cho div cha của nó */
+    background-color: #d1fae5 !important; /* Màu xanh lá cây nhạt */
+    border: 1px solid #10b981;
+}
+
+/* Style cho lựa chọn SAI của người dùng */
+.question.incorrect input:checked + label {
+    text-decoration: line-through;
+    color: #b91c1c;
+}
+
 /* --- STYLES FOR JSON-RENDERED QUIZ --- */
 
 .passage-container {

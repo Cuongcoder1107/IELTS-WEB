@@ -76,13 +76,14 @@ function timesUp() {
     clearInterval(timerInterval);
     isTimerRunning = false;
     document.getElementById('timerDisplay').classList.add('times-up');
-    document.getElementById('timerToggleBtn').style.display = 'none'; // Ẩn nút khi hết giờ
-    
+    document.getElementById('timerToggleBtn').style.display = 'none';
+    document.getElementById('timeSetter').disabled = true;
+
     // Tự động kiểm tra đáp án
     checkAllAnswers();
 
-    // Vô hiệu hóa tất cả các input
-    const inputs = rightViewer.querySelectorAll('input');
+    // Vô hiệu hóa tất cả các input và select
+    const inputs = rightViewer.querySelectorAll('input, select'); // *** SỬA Ở ĐÂY ***
     inputs.forEach(input => input.disabled = true);
     
     alert('Đã hết giờ làm bài! Đáp án của bạn đã được chấm.');
@@ -244,7 +245,6 @@ async function generateQuestionsWithAI(text) {
     const model = 'gemini-1.5-flash-latest';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
-    // *** PROMPT MỚI YÊU CẦU TRẢ VỀ JSON ***
     const prompt = `
         You are an expert IELTS test processor. Your task is to analyze the provided text of an IELTS Reading test and convert it into a structured JSON format.
 
@@ -256,15 +256,14 @@ async function generateQuestionsWithAI(text) {
 
         Each "questionGroup" object has:
         - "instruction": a string containing the instructions for that group.
-        - "type": a string representing the question type. Valid types are: "MULTIPLE_CHOICE", "TRUE_FALSE_NOT_GIVEN", "MATCHING_HEADINGS", "GAP_FILLING", "SHORT_ANSWER", "MATCHING_SENTENCE_ENDINGS". // <-- THÊM VÀO ĐÂY
+        - "type": a string representing the question type. Valid types are: "MULTIPLE_CHOICE", "TRUE_FALSE_NOT_GIVEN", "YES_NO_NOT_GIVEN", "MATCHING_HEADINGS", "GAP_FILLING", "SHORT_ANSWER", "MATCHING_SENTENCE_ENDINGS".
         - "questions": an array of question objects.
 
         Each "question" object has:
         - "number": a string (e.g., "1", "14-18").
         - "text": a string (the question text itself, or the statement for T/F/NG).
-        - "options": an array of strings (for MULTIPLE_CHOICE or MATCHING_HEADINGS). For other types, this can be an empty array.
-        - "answer": a string. Infer the correct answer from an answer key if present in the text. If not, set it to "NULL". For GAP_FILLING, the answer is the word(s) to be filled in.
         - "options": an array of strings. For MULTIPLE_CHOICE, MATCHING_HEADINGS, and MATCHING_SENTENCE_ENDINGS, this array (in the first question of the group) should contain the list of available options (A, B, C...). For other types, this can be an empty array.
+        - "answer": a string. Infer the correct answer from an answer key if present in the text. If not, set it to "NULL". For GAP_FILLING, the answer is the word(s) to be filled in.
 
         Your response MUST be ONLY a valid JSON object. Do not include any text, explanation, or markdown like \`\`\`json.
 
@@ -281,7 +280,7 @@ async function generateQuestionsWithAI(text) {
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
-                    responseMimeType: "application/json", // Yêu cầu trả về dạng JSON
+                    responseMimeType: "application/json",
                     temperature: 0.1,
                 }
             })
@@ -324,15 +323,11 @@ function renderQuizFromJSON(quizData) {
             if (matchingOptions) {
                  const title = group.type === 'MATCHING_HEADINGS' ? 'List of Headings' : 'List of Endings';
                  html += `<div class="matching-options-box"><h4>${title}</h4><ul>`;
-
-                 // *** SỬA Ở ĐÂY: Tự tạo và thêm ký tự A, B, C... ***
                  matchingOptions.forEach((opt, index) => {
-                     const prefix = String.fromCharCode(65 + index); // 65 là mã ASCII cho 'A'. index 0 -> 'A', 1 -> 'B', ...
-                     // Xóa ký tự A, B, C.. cũ nếu có để tránh trùng lặp
+                     const prefix = String.fromCharCode(65 + index);
                      const cleanOpt = opt.replace(/^[A-Z]\.\s*/, '');
                      html += `<li><b>${prefix}.</b> ${cleanOpt}</li>`;
                  });
-                 
                  html += `</ul></div>`;
             }
 
@@ -348,6 +343,9 @@ function renderQuizFromJSON(quizData) {
                             break;
                         case 'TRUE_FALSE_NOT_GIVEN':
                             html += renderTrueFalse(q);
+                            break;
+                        case 'YES_NO_NOT_GIVEN':
+                            html += renderYesNo(q);
                             break;
                         case 'MATCHING_HEADINGS':
                              html += renderMatching(q);
@@ -395,11 +393,23 @@ function renderMatchingSentenceEnding(q, group) {
 
 // Các hàm render cho từng loại câu hỏi
 function renderMultipleChoice(q) {
-    let optionsHtml = q.options.map(opt => {
-        const value = opt.match(/^[A-Z]/) ? opt.charAt(0) : '';
-        return `<label><input type="radio" name="q_${q.number}" value="${value}"> ${opt}</label>`;
+    // *** LOGIC SỬA LỖI TẠI ĐÂY ***
+    let optionsHtml = q.options.map((opt, index) => {
+        const value = String.fromCharCode(65 + index); // Tự tạo giá trị A, B, C...
+        const uniqueId = `q_${q.number.replace(/[^a-zA-Z0-9]/g, '')}_${value}`; // Tạo ID duy nhất cho mỗi lựa chọn
+
+        // Tách ký tự đầu (nếu có) và nội dung
+        const cleanOpt = opt.replace(/^[A-Z]\.\s*/, '');
+
+        return `
+            <div class="mc-option">
+                <input type="radio" name="q_${q.number}" id="${uniqueId}" value="${value}">
+                <label for="${uniqueId}">${cleanOpt}</label>
+            </div>
+        `;
     }).join('');
-    return `<p class="question-text">${q.number}. ${q.text}</p><div class="options">${optionsHtml}</div>`;
+    
+    return `<p class="question-text">${q.number}. ${q.text}</p><div class="options mc-options">${optionsHtml}</div>`;
 }
 
 function renderTrueFalse(q) {
@@ -450,74 +460,161 @@ function renderShortAnswer(q) {
     `;
 }
 
+// Thêm hàm MỚI này vào functions.js
+function renderYesNo(q) {
+    const uniqueId = `q_${q.number.replace(/[^a-zA-Z0-9]/g, '')}`; // Tạo ID duy nhất
+    return `
+        <div class="tf-question">
+            <span class="question-text">${q.number}. ${q.text}</span>
+            <div class="options tf-options">
+                <input type="radio" name="${uniqueId}" id="${uniqueId}_Y" value="YES">
+                <label for="${uniqueId}_Y">Yes</label>
+
+                <input type="radio" name="${uniqueId}" id="${uniqueId}_N" value="NO">
+                <label for="${uniqueId}_N">No</label>
+
+                <input type="radio" name="${uniqueId}" id="${uniqueId}_NG" value="NOT GIVEN">
+                <label for="${uniqueId}_NG">Not Given</label>
+            </div>
+        </div>
+    `;
+}
+
 function renderMatching(q) {
     return `<p class="question-text">${q.number}. ${q.text} <input type="text" class="matching-input" name="q_${q.number}" placeholder="Nhập đáp án (i, ii, ...)" style="width: 120px;"></p>`;
 }
 
 
-// Hàm kiểm tra đáp án tổng hợp
+// Thay thế hàm này trong functions.js
 function checkAllAnswers() {
-    document.querySelectorAll('.question').forEach(qElement => {
+    let correctCount = 0;
+    let totalScorableQuestions = 0;
+    const allQuestions = document.querySelectorAll('.question');
+
+    allQuestions.forEach(qElement => {
         const number = qElement.dataset.number;
-        const correctAnswer = qElement.dataset.answer;
-        
+        const correctAnswerRaw = qElement.dataset.answer;
+        const type = qElement.closest('.question-group')?.dataset.type;
+
         qElement.classList.remove('correct', 'incorrect', 'no-answer');
-        
-        if (correctAnswer === 'NULL' || !correctAnswer) {
+
+        if (correctAnswerRaw === 'NULL' || !correctAnswerRaw) {
             qElement.classList.add('no-answer');
             return;
         }
 
+        totalScorableQuestions++;
         let userAnswer = null;
         let isCorrect = false;
         
         const textInput = qElement.querySelector('input[type="text"]');
         const radioInput = qElement.querySelector('input[type="radio"]:checked');
-        const selectInput = qElement.querySelector('select'); // *** TÌM THẺ SELECT ***
+        const selectInput = qElement.querySelector('select');
+        
+        const correctAnswer = correctAnswerRaw.toLowerCase();
 
-        if (textInput) {
-            userAnswer = textInput.value.trim();
-            const correctAnswers = correctAnswer.split('/').map(ans => ans.trim().toLowerCase());
-            if (correctAnswers.includes(userAnswer.toLowerCase())) isCorrect = true;
+        if (textInput || selectInput) {
+            userAnswer = (textInput || selectInput).value.trim().toLowerCase();
+            const correctAnswers = correctAnswer.split('/').map(ans => ans.trim());
+            if (correctAnswers.includes(userAnswer)) isCorrect = true;
 
         } else if (radioInput) {
-            userAnswer = radioInput.value;
-            if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) isCorrect = true;
+            userAnswer = radioInput.value.toLowerCase();
+            if (type === 'MULTIPLE_CHOICE') {
+                if (userAnswer.charAt(0) === correctAnswer.charAt(0)) isCorrect = true;
+            } else if (type === 'TRUE_FALSE_NOT_GIVEN' || type === 'YES_NO_NOT_GIVEN') {
+                const synonyms = { 
+                    'true': ['true'], 'false': ['false'], 'not given': ['not given'],
+                    'yes': ['yes'], 'no': ['no']
+                };
+                
+                let correctAnswerKey = Object.keys(synonyms).find(key => synonyms[key].includes(correctAnswer));
+                let userAnswerKey = Object.keys(synonyms).find(key => synonyms[key].includes(userAnswer));
 
-        } else if (selectInput) { // *** XỬ LÝ CHO SELECT ***
-            userAnswer = selectInput.value;
-            if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) isCorrect = true;
+                if (userAnswerKey === correctAnswerKey) isCorrect = true;
+            }
         }
 
-        // Áp dụng style và hiển thị đáp án đúng nếu sai
         if (isCorrect) {
             qElement.classList.add('correct');
+            correctCount++;
         } else {
             qElement.classList.add('incorrect');
             const inputElement = textInput || selectInput;
             if (inputElement) {
                 const oldAnswer = inputElement.nextElementSibling;
-                if (oldAnswer && oldAnswer.classList.contains('correct-answer-text')) {
-                    oldAnswer.remove();
-                }
-                inputElement.insertAdjacentHTML('afterend', `<span class="correct-answer-text"> -> ${correctAnswer}</span>`);
+                if (oldAnswer && oldAnswer.classList.contains('correct-answer-text')) oldAnswer.remove();
+                inputElement.insertAdjacentHTML('afterend', `<span class="correct-answer-text"> -> ${correctAnswerRaw}</span>`);
             } else {
-                const correctLabel = qElement.querySelector(`input[value="${correctAnswer.toUpperCase()}"]`)?.nextElementSibling;
-                if (correctLabel) correctLabel.classList.add('correct-answer');
+                let correctValueToShow = correctAnswerRaw.charAt(0).toUpperCase();
+                
+                if (type === 'TRUE_FALSE_NOT_GIVEN' || type === 'YES_NO_NOT_GIVEN') {
+                     const answer = correctAnswerRaw.toLowerCase();
+                     if (answer.includes('true')) correctValueToShow = 'TRUE';
+                     else if (answer.includes('false')) correctValueToShow = 'FALSE';
+                     else if (answer.includes('yes')) correctValueToShow = 'YES';
+                     else if (answer.includes('no')) correctValueToShow = 'NO';
+                     else correctValueToShow = 'NOT GIVEN';
+                }
+
+                const correctRadio = qElement.querySelector(`input[value="${correctValueToShow}"]`);
+                if (correctRadio) {
+                    const correctLabel = qElement.querySelector(`label[for="${correctRadio.id}"]`);
+                    if (correctLabel) {
+                        correctLabel.classList.add('correct-answer'); 
+                    }
+                }
             }
         }
     });
 
     const checkBtn = document.querySelector('.check-answers-btn');
     checkBtn.disabled = true;
-    checkBtn.textContent = 'Đã kiểm tra';
+
+    const bandScore = calculateBandScore(correctCount, totalScorableQuestions);
+    checkBtn.textContent = `Điểm: ${bandScore.toFixed(1)} (${correctCount}/${totalScorableQuestions})`;
+    
+    if (!isTimerRunning) {
+        const allInputs = rightViewer.querySelectorAll('input, select');
+        allInputs.forEach(input => input.disabled = true);
+    }
+}
+
+// *** THÊM HÀM MỚI NÀY VÀO functions.js ***
+function calculateBandScore(correctAnswers, totalQuestions) {
+    // IELTS Reading band score conversion table (Academic)
+    // Đây là bảng quy đổi gần đúng, có thể thay đổi tùy đề
+    const scoreMap = {
+        40: 9.0, 39: 9.0,
+        38: 8.5, 37: 8.5,
+        36: 8.0, 35: 8.0,
+        34: 7.5, 33: 7.5,
+        32: 7.0, 31: 7.0, 30: 7.0,
+        29: 6.5, 28: 6.5, 27: 6.5, 26: 6.5,
+        25: 6.0, 24: 6.0, 23: 6.0,
+        22: 5.5, 21: 5.5, 20: 5.5, 19: 5.5,
+        18: 5.0, 17: 5.0, 16: 5.0, 15: 5.0,
+        14: 4.5, 13: 4.5,
+        12: 4.0, 11: 4.0, 10: 4.0,
+        9: 3.5, 8: 3.5, 7: 3.5,
+        6: 3.0, 5: 3.0,
+        4: 2.5,
+    };
+    // Nếu tổng số câu hỏi không phải 40, ta cần tính tỉ lệ
+    const equivalentScore = Math.round((correctAnswers / totalQuestions) * 40);
+
+    for (let score = 40; score >= 0; score--) {
+        if (equivalentScore >= score && scoreMap[score] !== undefined) {
+            return scoreMap[score];
+        }
+    }
+    return 0.0;
 }
 
 function loadNewFile() {
     currentPdf = null;
     pdfInput.value = '';
     resetTimer(); // Gọi hàm reset đồng hồ
-    document.getElementById('timerContainer').style.visibility = 'hidden'; // Ẩn đồng hồ đi
     document.getElementById('pdfContainer').style.display = 'none';
     document.getElementById('uploadSection').style.display = 'block';
     document.getElementById('newFileBtn').classList.remove('show');
