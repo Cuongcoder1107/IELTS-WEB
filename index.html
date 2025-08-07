@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Practice App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main Page -->
+        <div id="mainPage" class="main-page">
+            <h1 class="main-title">IELTS Practice</h1>
+            <p class="main-subtitle">Luyện tập các kỹ năng IELTS một cách hiệu quả</p>
+            
+            <div class="skills-grid">
+                <button class="skill-card" onclick="showPage('listeningPage')">
+                    <span class="skill-icon">🎧</span>
+                    <div class="skill-title">Listening</div>
+                    <div class="skill-description">Luyện tập kỹ năng nghe hiểu với các bài test chất lượng cao</div>
+                </button>
+                
+                <button class="skill-card" onclick="showPage('readingPage')">
+                    <span class="skill-icon">📖</span>
+                    <div class="skill-title">Reading</div>
+                    <div class="skill-description">Cải thiện khả năng đọc hiểu thông qua các đoạn văn đa dạng</div>
+                </button>
+                
+                <button class="skill-card" onclick="showPage('writingPage')">
+                    <span class="skill-icon">✍️</span>
+                    <div class="skill-title">Writing</div>
+                    <div class="skill-description">Phát triển kỹ năng viết luận và mô tả biểu đồ</div>
+                </button>
+                
+                <button class="skill-card" onclick="showPage('speakingPage')">
+                    <span class="skill-icon">🗣️</span>
+                    <div class="skill-title">Speaking</div>
+                    <div class="skill-description">Luyện tập nói thông qua các chủ đề thực tế</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Listening Page -->
+        <div id="listeningPage" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Listening Practice</h1>
+                <button class="back-btn" onclick="showPage('mainPage')">← Quay lại</button>
+            </div>
+            
+            <div class="listening-content">
+                <div class="listening-panels">
+                    <!-- Left Panel: Audio Upload -->
+                    <div id="audioPanel" class="listening-panel" style="flex: 0.3;">
+                        <div class="listening-panel-header">File nghe</div>
+                        <div id="audioUploadSection" class="upload-section">
+                            <h3>Tải lên file Audio</h3>
+                            <p>Kéo thả file mp3/wav vào đây hoặc click để chọn file</p>
+                            <input type="file" id="audioInput" class="upload-input" accept=".mp3,.wav" multiple>
+                            <button class="upload-btn" onclick="document.getElementById('audioInput').click()">
+                                Chọn file Audio
+                            </button>
+                        </div>
+                        <ul id="audioList" class="audio-list"></ul>
+                    </div>
+
+                    <!-- Resizer -->
+                    <div class="resizer" id="listeningResizer"></div>
+
+                    <!-- Right Panel: PDF Upload -->
+                    <div id="listeningPdfPanel" class="listening-panel" style="flex: 0.7;">
+                        <div class="listening-panel-header">Đề bài Nghe</div>
+                        <div id="listeningPdfUploadSection" class="upload-section">
+                            <h3>Tải lên file PDF đề nghe</h3>
+                            <p>Kéo thả file PDF vào đây hoặc click để chọn file</p>
+                            <input type="file" id="listeningPdfInput" class="upload-input" accept=".pdf">
+                            <button class="upload-btn" onclick="document.getElementById('listeningPdfInput').click()">
+                                Chọn file PDF
+                            </button>
+                        </div>
+                        <div id="listeningPdfViewer" class="pdf-viewer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reading Page -->
+        <div id="readingPage" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Reading Practice</h1>
+                <div class="header-buttons">
+                    <button id="newFileBtn" class="new-file-btn" onclick="loadNewFile()">
+                        📁 Tải file mới
+                    </button>
+                    <button class="back-btn" onclick="showPage('mainPage')">← Quay lại</button>
+                </div>
+            </div>
+            
+            <div class="reading-content">
+                <div id="uploadSection" class="upload-section">
+                    <h3>Tải lên file PDF đề thi Reading</h3>
+                    <p>Kéo thả file PDF vào đây hoặc click để chọn file</p>
+                    <input type="file" id="pdfInput" class="upload-input" accept=".pdf">
+                    <button class="upload-btn" onclick="document.getElementById('pdfInput').click()">
+                        Chọn file PDF
+                    </button>
+                </div>
+                
+                <div id="pdfContainer" class="pdf-container">
+                    <div class="pdf-panels">
+                        <div id="leftPanel" class="pdf-panel" style="flex: 1;">
+                            <div class="pdf-panel-header">Đề bài</div>
+                            <div id="leftViewer" class="pdf-viewer"></div>
+                        </div>
+                        
+                        <div class="resizer" id="resizer"></div>
+                        
+                        <div id="rightPanel" class="pdf-panel" style="flex: 1;">
+                            <div class="pdf-panel-header">Làm bài</div>
+                            <div id="rightViewer" class="pdf-viewer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Writing Page -->
+        <div id="writingPage" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Writing Practice</h1>
+                <button class="back-btn" onclick="showPage('mainPage')">← Quay lại</button>
+            </div>
+            <div class="under-development">
+                <h2>✍️ Chức năng đang phát triển</h2>
+                <p>Chức năng Writing đang được phát triển và sẽ sớm ra mắt với nhiều tính năng hấp dẫn.</p>
+            </div>
+        </div>
+
+        <!-- Speaking Page -->
+        <div id="speakingPage" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Speaking Practice</h1>
+                <button class="back-btn" onclick="showPage('mainPage')">← Quay lại</button>
+            </div>
+            <div class="under-development">
+                <h2>🗣️ Chức năng đang phát triển</h2>
+                <p>Chức năng Speaking đang được phát triển và sẽ sớm ra mắt với nhiều tính năng hấp dẫn.</p>
+            </div>
+        </div>
+    </div>
+    <script src="functions.js"></script>
+</body>
+</html>
